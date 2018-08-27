@@ -1,8 +1,9 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, Modal } from 'antd';
+import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import ChoosePaperType from '../../components/ChoosePaperType';
 import './index.scss';
 import $ from "jquery";
 class ManageContainer extends React.Component {
@@ -82,69 +83,6 @@ class ManageContainer extends React.Component {
         pass_grade: 70,
         creator: '张伟',
         is_creator: true,
-      },{
-        id: 4,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 5,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: false,
-      },{
-        id: 1,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 2,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 3,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 4,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 5,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: false,
       }
     ],
     pageCurrent: 1,
@@ -154,6 +92,23 @@ class ManageContainer extends React.Component {
 
 
   componentDidMount() {
+    const timer = setInterval(() => {
+      let { list } = this.state;
+      if (list.length > 30){
+        clearInterval(timer)
+      }
+      list.push({
+        id: 1,
+        name: '第一张测试试卷',
+        type: '固定试题',
+        count: 70,
+        total_grade: 100,
+        pass_grade: 70,
+        creator: '张伟',
+        is_creator: true,
+      })
+      this.setState({list})
+    }, 200)
   }
 
   // 1.1 试卷列表
@@ -175,13 +130,8 @@ class ManageContainer extends React.Component {
     })
   }
 
-  // 2.2 确定新建试卷
-  handleOk = () => {
-
-  }
-
-  // 2.3 取消新建试卷
-  handleCancel = () => {
+  // 2.2 取消新建试卷
+  hideModal = () => {
     this.setState({
       visible: false,
     })
@@ -189,7 +139,7 @@ class ManageContainer extends React.Component {
 
   // 3. 预览试卷
   previewPaper = (id) => {
-    window.open("/preview.html?id=" + id)
+    window.open("/#/preview?id=" + id)
   }
 
   // 4. 复制试卷
@@ -254,9 +204,9 @@ class ManageContainer extends React.Component {
                 </span>
               :
                 <span>
-                  <Icon type="edit" style={{fontSize:'16px', cursor: 'not-allowed'}} />
-                  <Icon type="copy" style={{fontSize:'16px', cursor: 'not-allowed', margin:'0 10px'}} />
-                  <Icon type="delete" style={{fontSize:'16px', cursor: 'not-allowed'}} />
+                  <Icon type="edit" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
+                  <Icon type="copy" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD', margin:'0 10px'}} />
+                  <Icon type="delete" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
                 </span>
             }
           </span>
@@ -269,7 +219,7 @@ class ManageContainer extends React.Component {
         <Sidebar active="manage" />
         <div className="text-right-left">
           <Breadcrumb>
-            <Breadcrumb.Item>
+            <Breadcrumb.Item href="/#/">
               <Icon type="folder-open" style={{marginRight: '5px'}} />
               <span>首页</span>
             </Breadcrumb.Item>
@@ -319,31 +269,7 @@ class ManageContainer extends React.Component {
             </span>
           </div>
         </div>
-
-        {/* 新建试卷Modal */}
-        <Modal
-          title="选择出题方式"
-          visible={this.state.visible}
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-          destroyOnClose={true}
-          width="600px"
-        >
-          <div className="chooseType">
-            <div>
-              <Icon type="edit" style={{fontSize:'35px', color:'#0692e1'}} />
-            </div>
-            <h3>固定试题</h3>
-            <p>所有考生的试题相同，试题的顺序可以固定，也可以打乱</p>
-          </div>
-          <div className="chooseType">
-            <div>
-              <Icon type="edit" style={{fontSize:'35px', color:'#04b2a2'}} />
-            </div>
-            <h3>随机试题</h3>
-            <p>设置试题抽取规则，随机生成试卷，</p>
-          </div>
-        </Modal>
+        <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
       </div>
     );
   }
@@ -364,15 +290,15 @@ export default class Manage extends React.Component {
       that.setState({ height })
     })
 
-    $(document.body).scroll(() => {
+    $(document).scroll(() => {
       this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
+        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
       })
     })
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
@@ -384,8 +310,3 @@ export default class Manage extends React.Component {
     );
   }
 }
-/*
-ReactDOM.render(
-  <LocaleProvider locale={locales.zh_CN}><App /></LocaleProvider>, document.getElementById('manage')
-)
-*/
