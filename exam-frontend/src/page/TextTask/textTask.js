@@ -15,10 +15,7 @@ export default class TextTask extends React.Component {
   state = {
     loading: true,
     visible: false,
-    list: [
-      { status: '未开始', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' },
-      { status: '考试中', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' }
-    ],
+    list: [],
     pageCurrent: 1,
     pageTotal: 0,
     pageSize: 10,
@@ -283,7 +280,7 @@ export default class TextTask extends React.Component {
         loading={this.state.loading}
         title={() =>
           <div>
-            <Button type="primary" href="/#/"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
+            <Button type="primary" href="/#/createTask"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
 
             {
               this.state.list.length < 1 ?

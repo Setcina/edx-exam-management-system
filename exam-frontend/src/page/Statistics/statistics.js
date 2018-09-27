@@ -26,7 +26,7 @@ class StatisticsContainer extends React.Component {
     allPaper: '',
     paperName: '毛泽东思想与邓小平理论',
     passGrade: 80,
-    paperType: '固定试题',
+    paperType: 'fixed',
     key: 'all',
     all: 0,
     pending: 0,
@@ -86,6 +86,9 @@ class StatisticsContainer extends React.Component {
             pending: res.data.extra_data.pending,
             pass: res.data.extra_data.pass,
             flunk: res.data.extra_data.flunk,
+            paperName: res.data.extra_data.task_name,
+            passGrade: res.data.extra_data.passing_grade,
+            paperType: res.data.extra_data.type,
 
           })
         } else {
@@ -294,14 +297,30 @@ class StatisticsContainer extends React.Component {
           <div style={{ overflow: 'hidden' }}>
             <p style={{ float: 'left', marginTop: '6px' }}>
               <span style={{ marginRight: '10px' }}>{this.state.paperName}</span>
-              <span>及格线：{this.state.passGrade}分（{this.state.paperType}）</span>
+              <span>及格线：{this.state.passGrade}分（
+                {
+                  this.state.paperType == "fixed" ?
+                    <span>固定试题</span>
+                    :
+                    <span>随机试题</span>
+                }
+                ）</span>
             </p>
-            <Input
-              prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="请输入姓名/电话/邮箱"
-              style={{ width: '200px', marginLeft: '10px', float: 'right' }}
-              onChange={this.onChangeSearch}
-            />
+            {
+              this.state.list.length < 1 ?
+                <Input
+                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  placeholder="请输入姓名/电话/邮箱"
+                  style={{ width: '200px', marginLeft: '10px', float: 'right' }}
+                />
+                :
+                <Input
+                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  placeholder="请输入姓名/电话/邮箱"
+                  style={{ width: '200px', marginLeft: '10px', float: 'right' }}
+                  onChange={this.onChangeSearch}
+                />
+            }
           </div>
         }
         locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
