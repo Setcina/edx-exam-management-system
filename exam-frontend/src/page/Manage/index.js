@@ -9,12 +9,12 @@ import './index.scss';
 import $ from "jquery";
 import none from "../../assets/images/none.png";
 class ManageContainer extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     this.searchAjax = null;
   }
 
-  state={
+  state = {
     loading: true,
     visible: false,
     list: [],
@@ -27,7 +27,6 @@ class ManageContainer extends React.Component {
 
   componentDidMount() {
     this.getList();
-
   }
 
   // 1.1 试卷列表
@@ -35,37 +34,38 @@ class ManageContainer extends React.Component {
     const { pageCurrent, pageSize, search } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
-    if (this.searchAjax){
+    if (this.searchAjax) {
       this.searchAjax();
     }
 
     this.setState({
       loading: true,
     }, () => {
-      axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+      axios.get('/api/exampapers/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
         cancelToken: new CancelToken(function executor(c) {
           // An executor function receives a cancel function as a parameter
           that.searchAjax = c
         })
       }).then(function (response) {
-          if (response.status === 200){
-            // 给list添加key
-            let list = response.data.results;
-            for (let i = 0; i < list.length; i++){
-              list[i].key = i;
-            }
-            that.setState({
-              list,
-              pageTotal: response.data.count,
-              loading: false,
-            })
-          } else {
-            message.error('请求失败')
-            that.setState({
-              loading: false,
-            })
+        const res = response.data;
+        if (res.status === 0) {
+          // 给list添加key
+          let list = res.data.results;
+          for (let i = 0; i < list.length; i++) {
+            list[i].key = i;
           }
-        })
+          that.setState({
+            list,
+            pageTotal: res.data.count,
+            loading: false,
+          })
+        } else {
+          message.error('请求失败')
+          that.setState({
+            loading: false,
+          })
+        }
+      })
         .catch(function (error) {
           that.setState({
             loading: false,
@@ -86,7 +86,7 @@ class ManageContainer extends React.Component {
   }
 
   // 1.3 试卷列表每页显示变更
-  handlePageSizeChange = (e) =>{
+  handlePageSizeChange = (e) => {
     this.setState({
       pageSize: e,
       pageCurrent: 1,
@@ -122,15 +122,16 @@ class ManageContainer extends React.Component {
 
   // 3. 预览试卷
   previewPaper = (id) => {
-    window.open("/#/preview?id=" + id)
+    window.open("/#/preview/" + id)
   }
 
   // 4. 复制试卷
   copyPaper = (id) => {
     const that = this;
-    axios.post('/api/exampaper/' + id + '/duplicate/')
+    axios.post('/api/exampapers/' + id + '/duplicate/')
       .then(function (response) {
-        if (response.status === 200){
+        const res = response.data;
+        if (res.status === 0) {
           that.getList();
         } else {
           message.error('复制失败');
@@ -154,19 +155,20 @@ class ManageContainer extends React.Component {
       cancelText: '取消',
       onOk: () => {
         // 删除试卷
-        axios.delete('/api/exampaper/' + id + '/')
-        .then(function (response) {
-          if (response.status === 200){
-            message.error('删除成功');
-            that.getList();
-          } else {
-            message.error('删除失败');
-          }
+        axios.delete('/api/exampapers/' + id + '/')
+          .then(function (response) {
+            const res = response.data;
+            if (res.status === 0) {
+              message.success('删除成功');
+              that.getList();
+            } else {
+              message.error('删除失败');
+            }
 
-        })
-        .catch(function (error) {
-          message.error('删除失败')
-        });
+          })
+          .catch(function (error) {
+            message.error('删除失败')
+          });
       }
     });
   }
@@ -185,14 +187,22 @@ class ManageContainer extends React.Component {
         dataIndex: 'name',
         width: '29%',
         render: (text, record) => (
-          <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+          <span>
+            {
+              record.create_type === 'fixed' ?
+                <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+                :
+                <span>{text}</span>
+            }
+          </span>
+
         )
       }, {
         title: '选题方式',
         dataIndex: 'create_type',
         width: '14%',
         render: (text) => (
-          <span>{ text === 'fixed' ? '固定试题' : '随机试题'}</span>
+          <span>{text === 'fixed' ? '固定试题' : '随机试题'}</span>
         )
       }, {
         title: '试题数',
@@ -216,29 +226,15 @@ class ManageContainer extends React.Component {
         width: '14%',
         render: (text, record, index) => (
           <span>
-            {
-              record.is_creator
-            }
-            {
-              true ?
-                <span>
-                  <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="复制">
-                    <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="删除">
-                    <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
-                  </Tooltip>
-                </span>
-              :
-                <span>
-                  <Icon type="edit" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                  <Icon type="copy" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD', margin:'0 10px'}} />
-                  <Icon type="delete" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                </span>
-            }
+            <Tooltip title="编辑">
+              <Icon type="edit" className="icon-blue" style={{ fontSize: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="复制">
+              <Icon type="copy" className="icon-blue" style={{ fontSize: '16px', margin: '0 10px' }} onClick={this.copyPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="删除">
+              <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+            </Tooltip>
           </span>
         )
       }
@@ -250,15 +246,15 @@ class ManageContainer extends React.Component {
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <Icon type="home" theme="outlined" style={{ fontSize: '14px', marginRight: '2px' }} />
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <i className="iconfont" style={{ fontSize: '12px', marginRight: '5px' }}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px'}}>试卷管理</h1>
+          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>试卷管理</h1>
           <Table
             columns={columns}
             dataSource={this.state.list}
@@ -272,33 +268,40 @@ class ManageContainer extends React.Component {
                 <Input
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
                   placeholder="请输入关键字"
-                  style={{width:'200px', marginLeft: '10px', position:'relative', top: '1px'}}
+                  style={{ width: '200px', marginLeft: '10px', position: 'relative', top: '1px' }}
                   onChange={this.onChangeSearch}
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '150px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>No files.</div></div> }}
+            locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
           />
-          <div className="page">
-            <Pagination
-              size="small"
-              current={this.state.pageCurrent}
-              total={this.state.pageTotal}
-              onChange={this.handlePageChange}
-              pageSize={this.state.pageSize}
-              className="page-num"
-            />
-            <span className="page-size">
-              {  !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '每页显示' : '' }
-              <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
-                <Select.Option value="10">10</Select.Option>
-                <Select.Option value="20">20</Select.Option>
-                <Select.Option value="30">30</Select.Option>
-                <Select.Option value="50">50</Select.Option>
-              </Select>
-              { !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '条' : 'items per page' }
-            </span>
-          </div>
+          {
+            this.state.list.length === 0 ?
+              null
+              :
+              <div className="page">
+                <span className="page-total">共{this.state.pageTotal}条记录</span>
+                <Pagination
+                  size="small"
+                  current={this.state.pageCurrent}
+                  total={this.state.pageTotal}
+                  onChange={this.handlePageChange}
+                  pageSize={this.state.pageSize}
+                  className="page-num"
+                />
+                <span className="page-size">
+                  每页显示
+                  <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px' }}>
+                    <Select.Option value="10">10</Select.Option>
+                    <Select.Option value="20">20</Select.Option>
+                    <Select.Option value="30">30</Select.Option>
+                    <Select.Option value="50">50</Select.Option>
+                  </Select>
+                  条
+                </span>
+              </div>
+          }
+
         </div>
         <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
       </div>
@@ -310,10 +313,9 @@ class ManageContainer extends React.Component {
 export default class Manage extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-    showShadow: false,
   }
 
-  componentDidMount(){
+  componentDidMount() {
     const that = this;
 
     $(window).resize(() => {
@@ -321,18 +323,13 @@ export default class Manage extends React.Component {
       that.setState({ height })
     })
 
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
-    })
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        <Header />
         <div className="container" style={containerHeight}>
           <ManageContainer />
         </div>
